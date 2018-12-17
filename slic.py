@@ -101,9 +101,9 @@ class SLICProcessor(object):
         return gradient
 
     def move_clusters(self):
-        '''
+        """
         取当前聚类点的领域点中，梯度最小的点作为聚类中心点
-        '''
+        """
         for cluster in self.clusters:
             cluster_gradient = self.get_gradient(cluster.h, cluster.w)
             for dh in range(-1, 2):
