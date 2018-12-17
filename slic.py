@@ -7,6 +7,7 @@ import time
 from colormath.color_objects import LabColor
 from colormath.color_diff import delta_e_cie2000
 
+
 class Cluster(object):
     cluster_index = 1
 
@@ -22,6 +23,7 @@ class Cluster(object):
         self.l = l
         self.a = a
         self.b = b
+
 
 class SLICProcessor(object):
     @staticmethod
@@ -50,8 +52,8 @@ class SLICProcessor(object):
         # cv2.imwrite(path,bgr_arr)
 
     def make_cluster(self, h, w):
-        h=int(h)
-        w=int(w)
+        h = int(h)
+        w = int(w)
         return Cluster(h, w,
                        self.data[h][w][0],
                        self.data[h][w][1],
@@ -117,11 +119,11 @@ class SLICProcessor(object):
         '''
         将图像中的每一个点划分到距离它最近的聚类中
         '''
-        l=len(self.clusters)
-        count=0
+        l = len(self.clusters)
+        count = 0
         for cluster in self.clusters:
             # print('%.2f'%(count/l))
-            count+=1
+            count += 1
             for h in range(cluster.h - 2 * self.S, cluster.h + 2 * self.S):
                 if h < 0 or h >= self.image_height: continue
                 for w in range(cluster.w - 2 * self.S, cluster.w + 2 * self.S):
@@ -138,11 +140,11 @@ class SLICProcessor(object):
                     if D < self.dis[h][w]:
                         if (h, w) not in self.label:
                             self.label[(h, w)] = cluster
-                            cluster.pixels[(h, w)]=1
+                            cluster.pixels[(h, w)] = 1
                         else:
-                            self.label[(h, w)].pixels[(h,w)]=0
+                            self.label[(h, w)].pixels[(h, w)] = 0
                             self.label[(h, w)] = cluster
-                            cluster.pixels[(h,w)]=1
+                            cluster.pixels[(h, w)] = 1
                         self.dis[h][w] = D
 
     def update_cluster(self):
@@ -153,7 +155,7 @@ class SLICProcessor(object):
         for cluster in self.clusters:
             sum_h = sum_w = number = 0
             for p in cluster.pixels.keys():
-                if(cluster.pixels[p]==0):
+                if (cluster.pixels[p] == 0):
                     continue
                 sum_h += p[0]
                 sum_w += p[1]
@@ -175,7 +177,7 @@ class SLICProcessor(object):
 
         self.save_lab_image(name, image_arr)
 
-    def iterate_ntimes(self,n=1):
+    def iterate_ntimes(self, n=1):
         """
         迭代n次，默认一次，并保存最终特征提取后的结果
         """
@@ -187,10 +189,10 @@ class SLICProcessor(object):
         self.save_current_image('1.png')
 
     def get_color_difference(self):
-        '''
+        """
         计算每个聚类与其他聚类的色差之和
-        '''
-        sum_list=[]
+        """
+        sum_list = []
         for i, cluster1 in enumerate(self.clusters):
             sum = 0
             color1 = LabColor(cluster1.l, cluster1.a, cluster1.b)
@@ -203,34 +205,35 @@ class SLICProcessor(object):
         return sum_list
 
 
-def get_simliarity(p1_l,p2_l):
+def get_simliarity(p1_l, p2_l):
     """
     计算两图片相似度，色差的方差，值越小越相似
     """
     min = len(p1_l)
-    if (min > len(p2_l)):
+    if min > len(p2_l):
         min = len(p2_l)
     sum = 0
     for i in range(min):
         sum += math.pow((p1_l[i] - p2_l[i]), 2)
     return math.sqrt(sum)
 
+
 if __name__ == '__main__':
-    name1='13000.jpeg'
-    p1 = SLICProcessor(name1, 64)
+    name1 = '13000.jpeg'
+    p1 = SLICProcessor(filename=name1, K=64)
     p1.iterate_ntimes()
     p1_l = p1.get_color_difference()
 
-    p='Corel5k/13000/'
-    p1_sim=[]
-    for i in range(13000,13020):
+    p = 'Corel5k/13000/'
+    p1_sim = []
+    for i in range(13000, 13020):
         print(i)
-        name2=p+str(i)+'.jpeg'
-        p2 = SLICProcessor(name2, 64)
+        name2 = p + str(i) + '.jpeg'
+        p2 = SLICProcessor(filename=name2, K=64)
         p2.iterate_ntimes()
         p2_l = p2.get_color_difference()
 
-        p1_sim.append([get_simliarity(p1_l,p2_l),i])
+        p1_sim.append([get_simliarity(p1_l, p2_l), i])
 
     p1_sim.sort()
     print(p1_sim)
